@@ -294,15 +294,17 @@ A critical question underlies our power-law finding: does the observed scaling r
 \begin{table}[t]
 \small
 \centering
-\caption{Smoothing control at $N{=}207$: MAE under temporal Gaussian smoothing ($\sigma$), 3 seeds. Persistence at $\sigma{=}0$ (3.38) differs from Table~\ref{tab:model_comparison} (3.51) due to denormalization timing differences (smoothing applied before normalization).}
+\caption{Smoothing control at $N{=}207$ (3 seeds). Pers.\ at $\sigma{=}0$ differs from Table~\ref{tab:model_comparison} due to normalization timing.}
 \label{tab:smoothing}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccc}
 \toprule
-Model & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ & Pers.\ ($\sigma{=}0$) \\
+Model & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
 \midrule
-DCRNN        & 3.68$\pm$0.12 & 1.49$\pm$0.02 & 0.58$\pm$0.02 & 0.39$\pm$0.02 & 3.38 \\
-GraphWaveNet & 3.61$\pm$0.08 & 2.19$\pm$0.16 & 1.35$\pm$0.03 & 1.01$\pm$0.04 & 3.38 \\
-LSTGCNN      & 5.08$\pm$0.02 & 3.59$\pm$0.01 & 2.97$\pm$0.00 & 2.89$\pm$0.04 & 3.38 \\
+DCRNN        & 3.68$\pm$0.12 & 1.49$\pm$0.02 & 0.58$\pm$0.02 & 0.39$\pm$0.02 \\
+GraphWaveNet & 3.61$\pm$0.08 & 2.19$\pm$0.16 & 1.35$\pm$0.03 & 1.01$\pm$0.04 \\
+LSTGCNN      & 5.08$\pm$0.02 & 3.59$\pm$0.01 & 2.97$\pm$0.00 & 2.89$\pm$0.04 \\
+\midrule
+Pers.\ & 3.38 & 1.98 & 1.37 & 1.12 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -369,22 +371,16 @@ All models use a consistent hyperparameter configuration across granularities; p
 \centering
 \caption{Shared training hyperparameters}
 \label{tab:hyperparams}
-\begin{tabular}{ll}
+\begin{tabular}{ll|ll}
 \toprule
-Hyperparameter & Value \\
+Hyperparameter & Value & Hyperparameter & Value \\
 \midrule
-Hidden dimension & 64 \\
-Number of layers & 2 \\
-LSTM hidden units & 64 \\
-LSTM layers & 2 \\
-Optimizer & Adam \\
-Learning rate & 0.001 \\
-LR scheduler & ReduceLROnPlateau (factor 0.5, patience 5) \\
-Batch size & 32 \\
-Max epochs & 100 \\
-Early stopping & Patience 15 (on validation MAE) \\
-Dropout (default) & 0.1 \\
-Seeds & $\{42, 123, 456, 789, 1024\}$ $\times$ 2\textsuperscript{sets} = 10 \\
+Hidden dim & 64 & Batch size & 32 \\
+Num layers & 2 & Max epochs & 100 \\
+LSTM hidden & 64 & Early stop & Patience 15 \\
+LSTM layers & 2 & Dropout & 0.1 \\
+Optimizer & Adam & LR scheduler & Plateau ($\times$0.5, pat.\ 5) \\
+LR & 0.001 & Seeds & 10 (5$\times$2 sets) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -392,18 +388,18 @@ Seeds & $\{42, 123, 456, 789, 1024\}$ $\times$ 2\textsuperscript{sets} = 10 \\
 \begin{table}[t]
 \small
 \centering
-\caption{Per-model architecture details and parameter counts (at $N = 207$)}
+\caption{Per-model architecture details ($N = 207$)}
 \label{tab:model_params}
-\begin{tabular}{llcc}
+\begin{tabular}{lccc}
 \toprule
-Model & Spatial layer & Temporal layer & Params \\
+Model & Spatial & Temporal & Params \\
 \midrule
-LSTGCNN      & Spectral GCN $\times$2     & LSTM $\times$2        & 172K \\
-DCRNN        & Diffusion Conv (K=2) & DCGRU $\times$2       & 172K \\
-STGCN        & ChebConv (K=3) $\times$2   & Gated 1D conv $\times$2 & 234K \\
-GraphWaveNet  & Self-adaptive adj   & Dilated causal conv $\times$6 & 160K \\
-GAT          & Multi-head attn $\times$2 (4 heads) & LSTM $\times$2  & 190K \\
-RandomGAT    & Fixed degree-norm   & LSTM $\times$2        & 170K \\
+LSTGCNN      & Spect.\ GCN$\times$2 & LSTM$\times$2 & 172K \\
+DCRNN        & Diff Conv (K=2) & DCGRU$\times$2 & 172K \\
+STGCN        & ChebConv$\times$2 & Gated 1D$\times$2 & 234K \\
+GraphWaveNet & Self-adaptive & Dilated$\times$6 & 160K \\
+GAT          & Attn$\times$2 (4h) & LSTM$\times$2 & 190K \\
+RandomGAT    & Degree-norm & LSTM$\times$2 & 170K \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -474,16 +470,16 @@ Table~\ref{tab:powlaw_all} reports the power-law fit parameters for all model--d
 \centering
 \caption{Power-law fit: $\text{MAE} = a \cdot N^b$}
 \label{tab:powlaw_all}
-\begin{tabular}{llcccc}
+\begin{tabular}{llccc}
 \toprule
-Dataset & Model & $a$ & $b$ & $R^2$ & 95\% CI \\
+Dataset & Model & $a$ & $b$ [95\% CI] & $R^2$ \\
 \midrule
-METR-LA   & DCRNN        & 1.572 & 0.173 & 0.987 & [0.160, 0.189] \\
-METR-LA   & LSTGCNN      & 2.533 & 0.176 & 0.719 & [0.098, 0.293] \\
-METR-LA   & GraphWaveNet & 1.624 & 0.157 & 0.984 & [0.142, 0.176] \\
-PeMS-Bay  & DCRNN        & 0.839 & 0.291 & 0.862 & [0.215, 0.368] \\
-PeMS-Bay  & STGCN        & 0.795 & 0.325 & 0.793 & [0.302, 0.605] \\
-PeMS-Bay  & LSTGCNN      & 0.821 & 0.284 & 0.860 & [0.210, 0.358] \\
+METR-LA   & DCRNN        & 1.572 & .173 [.160,.189] & .987 \\
+METR-LA   & LSTGCNN      & 2.533 & .176 [.098,.293] & .719 \\
+METR-LA   & GraphWaveNet & 1.624 & .157 [.142,.176] & .984 \\
+PeMS-Bay  & DCRNN        & 0.839 & .291 [.215,.368] & .862 \\
+PeMS-Bay  & STGCN        & 0.795 & .325 [.302,.605] & .793 \\
+PeMS-Bay  & LSTGCNN      & 0.821 & .284 [.210,.358] & .860 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -521,7 +517,7 @@ Table~\ref{tab:smoothing_full} provides the complete smoothing control results, 
 \centering
 \caption{Smoothing control at $N = 207$: mean MAE $\pm$ std (3 seeds)}
 \label{tab:smoothing_full}
-\begin{tabular}{lccccc}
+\begin{tabular}{lcccc}
 \toprule
 Model & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
 \midrule
