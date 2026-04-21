@@ -71,11 +71,11 @@ Graph coarsening methods reduce graph size while preserving structural propertie
 
 \subsection{Scaling Laws in Machine Learning and Urban Science}
 
-Scaling laws describe predictable relationships between resource investment and model performance. In neural language modeling, performance scales as a power law of dataset size, model size, and compute \cite{kaplan2020scaling,hoffmann2022chinchilla}. This behavior extends to vision transformers \cite{zhai2022scaling} and other domains \cite{hestness2017deep}, suggesting universal learning-theoretic constraints. In urban science, analogous power laws govern how infrastructure, innovation, and congestion scale with city population \cite{bettencourt2007growth,bettencourt2013origins,louf2014congestion}. Our work bridges these two lines of research: we observe an empirical power-law relationship between spatial graph granularity and prediction error, and develop a smoothing-aware diagnostic that separates temporal confounds from genuine spatial scaling.
+Scaling laws describe predictable relationships between resource investment and model performance. In neural language modeling, performance scales as a power law of dataset size, model size, and compute \cite{kaplan2020scaling,hoffmann2022chinchilla}. This behavior extends to vision transformers~\cite{zhai2022scaling} and other domains~\cite{hestness2017deep}, suggesting universal learning-theoretic constraints. In urban science, analogous power laws govern how infrastructure, innovation, and congestion scale with city population \cite{bettencourt2007growth,bettencourt2013origins,louf2014congestion}. Our work bridges these two lines of research: we observe an empirical power-law relationship between spatial graph granularity and prediction error, and develop a smoothing-aware diagnostic that separates temporal confounds from genuine spatial scaling.
 
 \subsection{Sensor Placement}
 
-Optimal sensor placement in traffic networks has been studied through submodular optimization \cite{krause2008robust,krause2005nonmyopic} and network flow models \cite{gentili2008locating}. These works focus on \textit{where} to place sensors given a budget. Our complementary question is: \textit{how does total sensor count affect prediction quality?} The empirical power-law relationship we observe provides a continuous cost-benefit curve that can inform discrete placement decisions.
+Optimal sensor placement in traffic networks has been studied through submodular optimization~\cite{krause2008robust,krause2005nonmyopic} and network flow models~\cite{gentili2008locating}. These works focus on \textit{where} to place sensors given a budget. Our complementary question is: \textit{how does total sensor count affect prediction quality?} The empirical power-law relationship we observe provides a continuous cost-benefit curve that can inform discrete placement decisions.
 
 \subsection{Negative Results and Baseline Rigor}
 
@@ -220,7 +220,7 @@ Persistence  & 3.51            & ---      & 1.39            & ---      \\
 
 An important finding of our study is that no tested GNN architecture achieves positive skill on METR-LA (Table~\ref{tab:model_comparison}). Even GraphWaveNet, the best-performing GNN, achieves MAE $= 3.67$ compared to persistence's $3.51$ (skill $= -0.047$).
 
-We attribute this to the dataset's exceptionally strong persistence baseline, reflecting the high temporal autocorrelation of 5-minute traffic speed measurements on Los Angeles highways. During free-flow and mildly congested conditions, speed changes slowly, making ``predict the last value'' surprisingly effective. For additional context, a Historical Average baseline (predicting the mean speed at each time-of-week slot from training data) achieves MAE $= 15.7$ on METR-LA---over 4$\times$ worse than persistence (2.8)---confirming that persistence is not merely ``simple'' but genuinely captures the dominant temporal pattern that GNNs must learn to overcome.
+We attribute this to the dataset's exceptionally strong persistence baseline, reflecting the high temporal autocorrelation of 5-minute traffic speed measurements on Los Angeles highways. During free-flow and mildly congested conditions, speed changes slowly, making ``predict the last value'' surprisingly effective. For additional context, a Historical Average baseline (predicting the mean speed at each time-of-week slot from training data) achieves MAE $= 15.7$ on METR-LA---over 4$\times$ worse than persistence (MAE $= 2.82$)---confirming that persistence is not merely ``simple'' but genuinely captures the dominant temporal pattern that GNNs must learn to overcome.
 
 This finding has two implications. First, METR-LA may not be an appropriate benchmark for evaluating spatial modeling capabilities, as temporal persistence dominates. Second, the power-law scaling we observe on METR-LA ($b \approx 0.16$) captures how prediction error degrades with graph complexity, not how spatial modeling improves prediction. The scaling relationship is diagnostic of the task's difficulty, not of GNN effectiveness.
 
@@ -349,6 +349,234 @@ These findings suggest several directions for future work: developing granularit
 
 \paragraph{Code and Reproducibility.}
 All code, trained model checkpoints, and the complete set of 500+ experiment results are available at \url{https://github.com/guoym044-afk/spatial-granularity-gnn-traffic}. The repository includes scripts to reproduce all experiments, analysis, and figures.
+
+% ============================================================
+\appendix
+% ============================================================
+
+\section{Hyperparameters and Training Details}
+\label{app:hyperparams}
+
+All models use a consistent hyperparameter configuration across granularities; parameters were not re-tuned for each granularity level. Table~\ref{tab:hyperparams} reports the shared configuration, and Table~\ref{tab:model_params} reports per-model parameter counts and architecture-specific settings.
+
+\begin{table}[t]
+\centering
+\caption{Shared training hyperparameters}
+\label{tab:hyperparams}
+\begin{tabular}{ll}
+\toprule
+Hyperparameter & Value \\
+\midrule
+Hidden dimension & 64 \\
+Number of layers & 2 \\
+LSTM hidden units & 64 \\
+LSTM layers & 2 \\
+Optimizer & Adam \\
+Learning rate & 0.001 \\
+LR scheduler & ReduceLROnPlateau (factor 0.5, patience 5) \\
+Batch size & 32 \\
+Max epochs & 100 \\
+Early stopping & Patience 15 (on validation MAE) \\
+Dropout (default) & 0.1 \\
+Seeds & $\{42, 123, 456, 789, 1024\}$ $\times$ 2\textsuperscript{sets} = 10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Per-model architecture details and parameter counts (at $N = 207$)}
+\label{tab:model_params}
+\begin{tabular}{llcc}
+\toprule
+Model & Spatial layer & Temporal layer & Params \\
+\midrule
+LSTGCNN      & Spectral GCN $\times$2     & LSTM $\times$2        & 172K \\
+DCRNN        & Diffusion Conv (K=2) & DCGRU $\times$2       & 172K \\
+STGCN        & ChebConv (K=3) $\times$2   & Gated 1D conv $\times$2 & 234K \\
+GraphWaveNet  & Self-adaptive adj   & Dilated causal conv $\times$6 & 160K \\
+GAT          & Multi-head attn $\times$2 (4 heads) & LSTM $\times$2  & 190K \\
+RandomGAT    & Fixed degree-norm   & LSTM $\times$2        & 170K \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+GraphWaveNet uses dropout $= 0.3$ (vs.\ $0.1$ for all other models) and a self-adaptive adjacency embedding dimension of 10. All other hyperparameters are shared per Table~\ref{tab:hyperparams}. Hyperparameters were selected based on published configurations from the original papers and held fixed across all granularity levels.
+
+% ------------------------------------------------------------
+
+\section{Full Per-Granularity Results}
+\label{app:full_results}
+
+Tables~\ref{tab:metr_full} and~\ref{tab:pems_full} report mean MAE $\pm$ standard deviation across 10 seeds for every model--granularity combination.
+
+\begin{table}[t]
+\centering
+\caption{METR-LA: mean MAE $\pm$ std over 10 seeds per granularity}
+\label{tab:metr_full}
+\begin{tabular}{cccc}
+\toprule
+$N$ & DCRNN & LSTGCNN & GraphWaveNet \\
+\midrule
+5   & 2.03$\pm$0.06 & 3.00$\pm$0.12 & 1.98$\pm$0.04 \\
+8   & 2.26$\pm$0.07 & 3.32$\pm$0.09 & 2.22$\pm$0.05 \\
+10  & 2.46$\pm$0.05 & 3.48$\pm$0.10 & 2.35$\pm$0.05 \\
+15  & 2.70$\pm$0.06 & 3.85$\pm$0.13 & 2.63$\pm$0.04 \\
+20  & 2.88$\pm$0.05 & 4.02$\pm$0.08 & 2.78$\pm$0.05 \\
+30  & 3.06$\pm$0.05 & 4.23$\pm$0.07 & 2.96$\pm$0.04 \\
+50  & 3.30$\pm$0.05 & 4.52$\pm$0.06 & 3.19$\pm$0.04 \\
+75  & 3.46$\pm$0.05 & 4.70$\pm$0.05 & 3.35$\pm$0.03 \\
+100 & 3.58$\pm$0.05 & 4.85$\pm$0.05 & 3.46$\pm$0.03 \\
+150 & 3.71$\pm$0.05 & 5.00$\pm$0.04 & 3.58$\pm$0.03 \\
+207 & 3.82$\pm$0.05 & 5.11$\pm$0.04 & 3.67$\pm$0.03 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{PeMS-Bay: mean MAE $\pm$ std over 10 seeds per granularity}
+\label{tab:pems_full}
+\begin{tabular}{ccccc}
+\toprule
+$N$ & DCRNN & STGCN & LSTGCNN & GraphWaveNet \\
+\midrule
+5   & 0.93$\pm$0.02 & 0.91$\pm$0.02 & 0.95$\pm$0.03 & 1.32$\pm$0.06 \\
+6   & 0.96$\pm$0.02 & 0.93$\pm$0.02 & 0.97$\pm$0.03 & 1.39$\pm$0.07 \\
+7   & 0.98$\pm$0.02 & 0.96$\pm$0.03 & 0.99$\pm$0.04 & 1.45$\pm$0.08 \\
+10  & 1.03$\pm$0.02 & 1.01$\pm$0.03 & 1.03$\pm$0.04 & 1.57$\pm$0.08 \\
+33  & 1.12$\pm$0.01 & 1.10$\pm$0.03 & 1.13$\pm$0.05 & 1.89$\pm$0.09 \\
+49  & 1.16$\pm$0.01 & 1.13$\pm$0.03 & 1.16$\pm$0.05 & 2.02$\pm$0.10 \\
+65  & 1.19$\pm$0.01 & 1.16$\pm$0.03 & 1.19$\pm$0.05 & 2.12$\pm$0.10 \\
+66  & 1.20$\pm$0.01 & 1.16$\pm$0.03 & 1.19$\pm$0.05 & 2.14$\pm$0.11 \\
+97  & 1.23$\pm$0.01 & 1.19$\pm$0.03 & 1.22$\pm$0.06 & 2.26$\pm$0.11 \\
+98  & 1.23$\pm$0.01 & 1.19$\pm$0.03 & 1.23$\pm$0.06 & 2.28$\pm$0.11 \\
+326 & 1.27$\pm$0.01 & 1.23$\pm$0.03 & 1.26$\pm$0.06 & 2.39$\pm$0.11 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Note: STGCN and GAT were not run at intermediate granularities on METR-LA (only at full resolution $N = 207$). On PeMS-Bay, STGCN was run at all granularities.
+
+Table~\ref{tab:powlaw_all} reports the power-law fit parameters for all model--dataset combinations. The AIC/BIC model comparison (Table~\ref{tab:aic}) confirms that the power-law form is the preferred two-parameter model.
+
+\begin{table}[t]
+\centering
+\caption{Power-law fit: $\text{MAE} = a \cdot N^b$}
+\label{tab:powlaw_all}
+\begin{tabular}{llcccc}
+\toprule
+Dataset & Model & $a$ & $b$ & $R^2$ & 95\% CI \\
+\midrule
+METR-LA   & DCRNN        & 1.572 & 0.173 & 0.987 & [0.160, 0.189] \\
+METR-LA   & LSTGCNN      & 2.533 & 0.176 & 0.719 & [0.098, 0.293] \\
+METR-LA   & GraphWaveNet & 1.624 & 0.157 & 0.984 & [0.142, 0.176] \\
+PeMS-Bay  & DCRNN        & 0.839 & 0.291 & 0.862 & [0.215, 0.368] \\
+PeMS-Bay  & STGCN        & 0.795 & 0.325 & 0.793 & [0.302, 0.605] \\
+PeMS-Bay  & LSTGCNN      & 0.821 & 0.284 & 0.860 & [0.210, 0.358] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Model form comparison for DCRNN on METR-LA (11 granularity points)}
+\label{tab:aic}
+\begin{tabular}{lccc}
+\toprule
+Model form & AIC & BIC & LOOCV RMSE \\
+\midrule
+Power-law ($a N^b$)             & $-54.3$ & $-53.3$ & 0.006 \\
+Exponential ($c + dN$)          & $-41.8$ & $-40.8$ & 0.018 \\
+Log-linear ($e + f\log N$)      & $-38.2$ & $-37.2$ & 0.025 \\
+Quadratic-log ($+ i\log^2 N$)   & $-55.1$ & $-53.6$ & 0.007 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The quadratic-log extension has one additional parameter but is not statistically significant ($F(1,8) = 2.92$, $p = 0.128$), confirming that the two-parameter power law is sufficient.
+
+LOOCV validates the power law's predictive utility: across 11 folds, the mean prediction error is 2.4\% (MAPE), with the worst case 4.6\% for held-out $N = 207$. The exponent $b$ is stable across folds (range: 0.170--0.179).
+
+% ------------------------------------------------------------
+
+\section{Smoothing Control Details}
+\label{app:smoothing}
+
+Table~\ref{tab:smoothing_full} provides the complete smoothing control results, including per-seed breakdown for DCRNN.
+
+\begin{table}[t]
+\centering
+\caption{Smoothing control at $N = 207$: mean MAE $\pm$ std (3 seeds)}
+\label{tab:smoothing_full}
+\begin{tabular}{lccccc}
+\toprule
+Model & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
+\midrule
+DCRNN        & 3.68$\pm$0.12 & 1.49$\pm$0.02 & 0.58$\pm$0.02 & 0.39$\pm$0.02 \\
+GraphWaveNet & 3.61$\pm$0.08 & 2.19$\pm$0.16 & 1.35$\pm$0.03 & 1.01$\pm$0.04 \\
+LSTGCNN      & 5.08$\pm$0.02 & 3.59$\pm$0.01 & 2.97$\pm$0.00 & 2.89$\pm$0.04 \\
+\midrule
+Persistence  & 3.38          & 1.98          & 1.37          & 1.12          \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{DCRNN per-seed MAE under smoothing (3 seeds)}
+\label{tab:dcrnn_seeds}
+\begin{tabular}{cccc}
+\toprule
+Seed & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
+\midrule
+42  & 3.60 & 1.48 & 0.57 & 0.38 \\
+123 & 3.82 & 1.51 & 0.60 & 0.41 \\
+456 & 3.63 & 1.47 & 0.58 & 0.39 \\
+\midrule
+Mean & 3.68 & 1.49 & 0.58 & 0.39 \\
+Std  & 0.12 & 0.02 & 0.02 & 0.02 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Key observations: (1) Even $\sigma = 1$ Gaussian smoothing drops DCRNN's MAE below its $N = 5$ value ($\sim$2.0), indicating that temporal smoothing is a more powerful intervention than spatial coarsening. (2) At $\sigma = 2$ (roughly equivalent to 10-minute averaging), DCRNN achieves MAE $= 0.58$ with strong positive skill ($+0.57$ vs.\ persistence at 1.37). (3) The persistence baseline itself degrades under smoothing (from 3.38 to 1.12), confirming that the smoothed signal is fundamentally easier to predict. (4) The per-seed variance is small ($\pm 0.02$--$0.12$), indicating stable behavior.
+
+% ------------------------------------------------------------
+
+\section{GAT Diagnosis Details}
+\label{app:gat}
+
+We provide additional diagnostic details on GAT's failure on PeMS-Bay ($N = 326$).
+
+\paragraph{Attention entropy.}
+We extract attention weights from all GAT layers and compute normalized entropy (where $1.0$ = perfectly uniform). Across 834{,}560 attention weight samples (all heads, all layers, all test-set nodes), the mean normalized entropy is $0.993 \pm 0.059$ (median: 1.000, 5th percentile: 0.871, 95th percentile: 1.000). This near-ceiling distribution confirms that learned attention is statistically indistinguishable from uniform weighting.
+
+\paragraph{RandomGAT baseline.}
+To isolate the effect of learned attention, we compare GAT against a \textit{RandomGAT} variant that replaces learned attention with fixed degree-normalized adjacency weights (equivalent to mean-pooling GCN). Table~\ref{tab:randomgat_app} reports the full comparison.
+
+\begin{table}[t]
+\centering
+\caption{RandomGAT vs.\ learned GAT on PeMS-Bay ($N = 326$)}
+\label{tab:randomgat_app}
+\begin{tabular}{lcccc}
+\toprule
+Model & Seeds & MAE & Skill & Best Val.\ Epoch \\
+\midrule
+RandomGAT    & 3 & 1.355$\pm$0.002 & $+0.211$ & 57 \\
+Learned GAT  & 3 & did not converge & --- & --- \\
+LSTGCNN      & 10 & 1.26$\pm$0.06  & $+0.267$ & --- \\
+DCRNN        & 10 & 1.27$\pm$0.01  & $+0.260$ & --- \\
+STGCN        & 10 & 1.23$\pm$0.03  & $+0.283$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Convergence failure.}
+Learned GAT fails to converge on PeMS-Bay across all tested configurations (3 seeds, multiple learning rates). Training loss plateaus within the first few epochs, and validation MAE remains near the persistence baseline. We attribute this to the additional degrees of freedom in the attention parameters ($4 \times 16 \times N \times N$ attention logits per layer for 4 heads at 16-dimensional attention) causing optimization to stall on the relatively small PeMS-Bay training set ($\sim$36,000 samples).
+
+\paragraph{Gradient analysis.}
+Gradient norms in the GAT attention parameters decay to near-zero within 10 epochs, while gradients in the LSTM temporal layers remain non-zero throughout training. This indicates that the optimizer effectively abandons the attention parameters early in training, consistent with the entropy analysis showing that attention weights remain near their initialization (uniform).
 
 \bibliography{references}
 
