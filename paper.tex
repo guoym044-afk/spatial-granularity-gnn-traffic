@@ -196,6 +196,7 @@ On PeMS-Bay, we fit the power law across 11 granularity levels for both DCRNN an
 Table~\ref{tab:model_comparison} compares all architectures at the native dataset granularity.
 
 \begin{table}[t]
+\small
 \centering
 \caption{Model comparison at full granularity (10 seeds, mean $\pm$ 95\% CI).}
 \label{tab:model_comparison}
@@ -249,6 +250,7 @@ This finding suggests that for traffic prediction---where spatial relationships 
 Table~\ref{tab:randomgat} summarizes the comparison. RandomGAT achieves positive skill ($+0.211$), confirming that the GNN message-passing framework itself provides value for traffic prediction. The problem is not with graph attention in principle, but with learned attention in practice on this domain.
 
 \begin{table}[t]
+\small
 \centering
 \caption{RandomGAT vs.\ learned GAT on PeMS-Bay ($N{=}326$, 3 seeds).}
 \label{tab:randomgat}
@@ -290,6 +292,7 @@ LOOCV validates the model's predictive utility: mean prediction error is 2.4\% (
 A critical question underlies our power-law finding: does the observed scaling reflect the effect of \textit{graph structure} (spatial coarsening losing information), or merely \textit{temporal signal smoothing} (averaging sensor features along the time axis during node merging)? To disentangle these confounds, we conduct a \textit{same-$N$ smoothing control experiment}: we fix $N = 207$ (full resolution) and apply Gaussian temporal smoothing ($\sigma \in \{0, 1, 2, 3\}$) to all time series before training. If smoothing alone reproduces the power-law MAE increase, then the exponent $b$ reflects signal bandwidth rather than graph topology.
 
 \begin{table}[t]
+\small
 \centering
 \caption{Smoothing control at $N{=}207$: MAE under temporal Gaussian smoothing ($\sigma$), 3 seeds. Persistence at $\sigma{=}0$ (3.38) differs from Table~\ref{tab:model_comparison} (3.51) due to denormalization timing differences (smoothing applied before normalization).}
 \label{tab:smoothing}
@@ -350,6 +353,8 @@ These findings suggest several directions for future work: developing granularit
 \paragraph{Code and Reproducibility.}
 All code, trained model checkpoints, and the complete set of 500+ experiment results are available at \url{https://github.com/guoym044-afk/spatial-granularity-gnn-traffic}. The repository includes scripts to reproduce all experiments, analysis, and figures.
 
+\bibliography{references}
+
 % ============================================================
 \appendix
 % ============================================================
@@ -360,6 +365,7 @@ All code, trained model checkpoints, and the complete set of 500+ experiment res
 All models use a consistent hyperparameter configuration across granularities; parameters were not re-tuned for each granularity level. Table~\ref{tab:hyperparams} reports the shared configuration, and Table~\ref{tab:model_params} reports per-model parameter counts and architecture-specific settings.
 
 \begin{table}[t]
+\small
 \centering
 \caption{Shared training hyperparameters}
 \label{tab:hyperparams}
@@ -384,6 +390,7 @@ Seeds & $\{42, 123, 456, 789, 1024\}$ $\times$ 2\textsuperscript{sets} = 10 \\
 \end{table}
 
 \begin{table}[t]
+\small
 \centering
 \caption{Per-model architecture details and parameter counts (at $N = 207$)}
 \label{tab:model_params}
@@ -411,6 +418,7 @@ GraphWaveNet uses dropout $= 0.3$ (vs.\ $0.1$ for all other models) and a self-a
 Tables~\ref{tab:metr_full} and~\ref{tab:pems_full} report mean MAE $\pm$ standard deviation across 10 seeds for every model--granularity combination.
 
 \begin{table}[t]
+\small
 \centering
 \caption{METR-LA: mean MAE $\pm$ std over 10 seeds per granularity}
 \label{tab:metr_full}
@@ -434,6 +442,7 @@ $N$ & DCRNN & LSTGCNN & GraphWaveNet \\
 \end{table}
 
 \begin{table}[t]
+\small
 \centering
 \caption{PeMS-Bay: mean MAE $\pm$ std over 10 seeds per granularity}
 \label{tab:pems_full}
@@ -461,6 +470,7 @@ Note: STGCN and GAT were not run at intermediate granularities on METR-LA (only 
 Table~\ref{tab:powlaw_all} reports the power-law fit parameters for all model--dataset combinations. The AIC/BIC model comparison (Table~\ref{tab:aic}) confirms that the power-law form is the preferred two-parameter model.
 
 \begin{table}[t]
+\small
 \centering
 \caption{Power-law fit: $\text{MAE} = a \cdot N^b$}
 \label{tab:powlaw_all}
@@ -479,6 +489,7 @@ PeMS-Bay  & LSTGCNN      & 0.821 & 0.284 & 0.860 & [0.210, 0.358] \\
 \end{table}
 
 \begin{table}[t]
+\small
 \centering
 \caption{Model form comparison for DCRNN on METR-LA (11 granularity points)}
 \label{tab:aic}
@@ -506,6 +517,7 @@ LOOCV validates the power law's predictive utility: across 11 folds, the mean pr
 Table~\ref{tab:smoothing_full} provides the complete smoothing control results, including per-seed breakdown for DCRNN.
 
 \begin{table}[t]
+\small
 \centering
 \caption{Smoothing control at $N = 207$: mean MAE $\pm$ std (3 seeds)}
 \label{tab:smoothing_full}
@@ -523,6 +535,7 @@ Persistence  & 3.38          & 1.98          & 1.37          & 1.12          \\
 \end{table}
 
 \begin{table}[t]
+\small
 \centering
 \caption{DCRNN per-seed MAE under smoothing (3 seeds)}
 \label{tab:dcrnn_seeds}
@@ -556,6 +569,7 @@ We extract attention weights from all GAT layers and compute normalized entropy 
 To isolate the effect of learned attention, we compare GAT against a \textit{RandomGAT} variant that replaces learned attention with fixed degree-normalized adjacency weights (equivalent to mean-pooling GCN). Table~\ref{tab:randomgat_app} reports the full comparison.
 
 \begin{table}[t]
+\small
 \centering
 \caption{RandomGAT vs.\ learned GAT on PeMS-Bay ($N = 326$)}
 \label{tab:randomgat_app}
@@ -577,7 +591,5 @@ Learned GAT fails to converge on PeMS-Bay across all tested configurations (3 se
 
 \paragraph{Gradient analysis.}
 Gradient norms in the GAT attention parameters decay to near-zero within 10 epochs, while gradients in the LSTM temporal layers remain non-zero throughout training. This indicates that the optimizer effectively abandons the attention parameters early in training, consistent with the entropy analysis showing that attention weights remain near their initialization (uniform).
-
-\bibliography{references}
 
 \end{document}
