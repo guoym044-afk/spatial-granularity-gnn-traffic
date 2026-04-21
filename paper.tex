@@ -18,6 +18,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{booktabs}
+\usepackage{multirow}
 
 \setcounter{secnumdepth}{1}
 
@@ -510,82 +511,65 @@ LOOCV validates the power law's predictive utility: across 11 folds, the mean pr
 \section{Smoothing Control Details}
 \label{app:smoothing}
 
-Table~\ref{tab:smoothing_full} provides the complete smoothing control results, including per-seed breakdown for DCRNN.
+Table~\ref{tab:smoothing_full} provides the complete smoothing control results with per-seed breakdown.
 
 \begin{table}[t]
 \small
 \centering
-\caption{Smoothing control at $N = 207$: mean MAE $\pm$ std (3 seeds)}
+\caption{Smoothing control at $N = 207$: full results}
 \label{tab:smoothing_full}
-\begin{tabular}{lcccc}
+\begin{tabular}{llcccc}
 \toprule
-Model & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
+& Model & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
 \midrule
-DCRNN        & 3.68$\pm$0.12 & 1.49$\pm$0.02 & 0.58$\pm$0.02 & 0.39$\pm$0.02 \\
-GraphWaveNet & 3.61$\pm$0.08 & 2.19$\pm$0.16 & 1.35$\pm$0.03 & 1.01$\pm$0.04 \\
-LSTGCNN      & 5.08$\pm$0.02 & 3.59$\pm$0.01 & 2.97$\pm$0.00 & 2.89$\pm$0.04 \\
+\multirow{3}{*}{\rotatebox{90}{\tiny Models}}
+& DCRNN        & 3.68$\pm$.12 & 1.49$\pm$.02 & 0.58$\pm$.02 & 0.39$\pm$.02 \\
+& GraphWaveNet & 3.61$\pm$.08 & 2.19$\pm$.16 & 1.35$\pm$.03 & 1.01$\pm$.04 \\
+& LSTGCNN      & 5.08$\pm$.02 & 3.59$\pm$.01 & 2.97$\pm$.00 & 2.89$\pm$.04 \\
 \midrule
-Persistence  & 3.38          & 1.98          & 1.37          & 1.12          \\
+\multirow{3}{*}{\rotatebox{90}{\tiny Seeds}}
+& DCRNN (s42)  & 3.60 & 1.48 & 0.57 & 0.38 \\
+& DCRNN (s123) & 3.82 & 1.51 & 0.60 & 0.41 \\
+& DCRNN (s456) & 3.63 & 1.47 & 0.58 & 0.39 \\
+\midrule
+& Persistence  & 3.38 & 1.98 & 1.37 & 1.12 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
-\small
-\centering
-\caption{DCRNN per-seed MAE under smoothing (3 seeds)}
-\label{tab:dcrnn_seeds}
-\begin{tabular}{cccc}
-\toprule
-Seed & $\sigma{=}0$ & $\sigma{=}1$ & $\sigma{=}2$ & $\sigma{=}3$ \\
-\midrule
-42  & 3.60 & 1.48 & 0.57 & 0.38 \\
-123 & 3.82 & 1.51 & 0.60 & 0.41 \\
-456 & 3.63 & 1.47 & 0.58 & 0.39 \\
-\midrule
-Mean & 3.68 & 1.49 & 0.58 & 0.39 \\
-Std  & 0.12 & 0.02 & 0.02 & 0.02 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Key observations: (1) Even $\sigma = 1$ Gaussian smoothing drops DCRNN's MAE below its $N = 5$ value ($\sim$2.0), indicating that temporal smoothing is a more powerful intervention than spatial coarsening. (2) At $\sigma = 2$ (roughly equivalent to 10-minute averaging), DCRNN achieves MAE $= 0.58$ with strong positive skill ($+0.57$ vs.\ persistence at 1.37). (3) The persistence baseline itself degrades under smoothing (from 3.38 to 1.12), confirming that the smoothed signal is fundamentally easier to predict. (4) The per-seed variance is small ($\pm 0.02$--$0.12$), indicating stable behavior.
+Key observations: (1) $\sigma = 1$ drops DCRNN MAE below its $N = 5$ value ($\sim$2.0). (2) $\sigma = 2$ gives DCRNN skill $= +0.57$. (3) Per-seed variance is small ($\pm 0.02$--$0.12$).
 
 % ------------------------------------------------------------
 
 \section{GAT Diagnosis Details}
 \label{app:gat}
 
-We provide additional diagnostic details on GAT's failure on PeMS-Bay ($N = 326$).
-
 \paragraph{Attention entropy.}
-We extract attention weights from all GAT layers and compute normalized entropy (where $1.0$ = perfectly uniform). Across 834{,}560 attention weight samples (all heads, all layers, all test-set nodes), the mean normalized entropy is $0.993 \pm 0.059$ (median: 1.000, 5th percentile: 0.871, 95th percentile: 1.000). This near-ceiling distribution confirms that learned attention is statistically indistinguishable from uniform weighting.
+Across 834{,}560 attention weight samples (all heads, layers, test-set nodes), the mean normalized entropy is $0.993 \pm 0.059$ (median: 1.000, 5th/95th percentiles: 0.871/1.000), confirming that learned attention is statistically indistinguishable from uniform weighting.
 
 \paragraph{RandomGAT baseline.}
-To isolate the effect of learned attention, we compare GAT against a \textit{RandomGAT} variant that replaces learned attention with fixed degree-normalized adjacency weights (equivalent to mean-pooling GCN). Table~\ref{tab:randomgat_app} reports the full comparison.
+Table~\ref{tab:randomgat_app} compares GAT variants on PeMS-Bay.
 
 \begin{table}[t]
 \small
 \centering
-\caption{RandomGAT vs.\ learned GAT on PeMS-Bay ($N = 326$)}
+\caption{GAT variants on PeMS-Bay ($N = 326$)}
 \label{tab:randomgat_app}
-\begin{tabular}{lcccc}
+\begin{tabular}{lccc}
 \toprule
-Model & Seeds & MAE & Skill & Best Val.\ Epoch \\
+Model & MAE & Skill & Notes \\
 \midrule
-RandomGAT    & 3 & 1.355$\pm$0.002 & $+0.211$ & 57 \\
-Learned GAT  & 3 & did not converge & --- & --- \\
-LSTGCNN      & 10 & 1.26$\pm$0.06  & $+0.267$ & --- \\
-DCRNN        & 10 & 1.27$\pm$0.01  & $+0.260$ & --- \\
-STGCN        & 10 & 1.23$\pm$0.03  & $+0.283$ & --- \\
+RandomGAT    & 1.355$\pm$.002 & $+0.211$ & fixed uniform, 3 seeds \\
+Learned GAT  & --- & --- & did not converge \\
+\midrule
+LSTGCNN      & 1.26$\pm$.06 & $+0.267$ & 10 seeds \\
+DCRNN        & 1.27$\pm$.01 & $+0.260$ & 10 seeds \\
+STGCN        & 1.23$\pm$.03 & $+0.283$ & 10 seeds \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Convergence failure.}
-Learned GAT fails to converge on PeMS-Bay across all tested configurations (3 seeds, multiple learning rates). Training loss plateaus within the first few epochs, and validation MAE remains near the persistence baseline. We attribute this to the additional degrees of freedom in the attention parameters ($4 \times 16 \times N \times N$ attention logits per layer for 4 heads at 16-dimensional attention) causing optimization to stall on the relatively small PeMS-Bay training set ($\sim$36,000 samples).
-
-\paragraph{Gradient analysis.}
-Gradient norms in the GAT attention parameters decay to near-zero within 10 epochs, while gradients in the LSTM temporal layers remain non-zero throughout training. This indicates that the optimizer effectively abandons the attention parameters early in training, consistent with the entropy analysis showing that attention weights remain near their initialization (uniform).
+Learned GAT plateaus within the first few epochs across all configurations (3 seeds, multiple learning rates). Gradient norms in attention parameters decay to near-zero within 10 epochs, while LSTM temporal-layer gradients remain non-zero. The optimizer effectively abandons the attention parameters, consistent with entropy remaining near initialization (uniform).
 
 \end{document}
