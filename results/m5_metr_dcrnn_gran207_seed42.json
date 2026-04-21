@@ -1,0 +1,29 @@
+{
+  "granularity": "gran207",
+  "scene": "all",
+  "seed": 42,
+  "model_type": "dcrnn",
+  "data_source": "metr",
+  "num_nodes": 207,
+  "total_params": 172481,
+  "train_time_sec": 317.2,
+  "dcrnn": {
+    "MAE": 3.772458791732788,
+    "RMSE": 8.14184284210205,
+    "MAPE": 64101512.0,
+    "NMAE": 0.05389226973056793,
+    "skill_score": -0.07484614849090576,
+    "per_sample_mae": null
+  },
+  "baselines": {
+    "last_value": {
+      "MAE": 3.5097663402557373,
+      "RMSE": 8.579851150512695,
+      "MAPE": 35258332.0,
+      "NMAE": 0.050139520317316055,
+      "skill_score": null,
+      "per_sample_mae": null
+    }
+  },
+  "best_val_epoch": 25
+}

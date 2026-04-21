@@ -1,0 +1,25 @@
+{
+  "granularity": "smooth_s0",
+  "scene": "all",
+  "seed": 42,
+  "model_type": "dcrnn",
+  "data_source": "metr",
+  "sigma": 0,
+  "num_nodes": 207,
+  "total_params": 172481,
+  "train_time_sec": 327.9,
+  "dcrnn": {
+    "MAE": 3.6389143466949463,
+    "RMSE": 7.779388427734375,
+    "MAPE": 58867480.0,
+    "skill_score": -0.0780484676361084
+  },
+  "baselines": {
+    "last_value": {
+      "MAE": 3.375464677810669,
+      "RMSE": 8.22016429901123,
+      "MAPE": 30568082.0
+    }
+  },
+  "best_val_epoch": 25
+}

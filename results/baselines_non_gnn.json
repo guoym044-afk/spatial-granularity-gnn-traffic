@@ -1,0 +1,90 @@
+{
+  "S1_merge": {
+    "historical_avg": {
+      "model_type": "historical_avg",
+      "mae": 3.537160634994507,
+      "rmse": 4.420076847076416,
+      "scene": "S1_merge",
+      "num_nodes": 66,
+      "persistence_mae": 1.5720632076263428
+    },
+    "arima": {
+      "model_type": "arima",
+      "mae": 1.758508326906398,
+      "num_samples": 200,
+      "time_sec": 157.1,
+      "scene": "S1_merge",
+      "num_nodes": 66,
+      "persistence_mae": 1.5720632076263428
+    },
+    "persistence": {
+      "mae": 1.5720632076263428
+    }
+  },
+  "S2_straight": {
+    "historical_avg": {
+      "model_type": "historical_avg",
+      "mae": 1.258598804473877,
+      "rmse": 1.5782499313354492,
+      "scene": "S2_straight",
+      "num_nodes": 98,
+      "persistence_mae": 1.6616853475570679
+    },
+    "arima": {
+      "model_type": "arima",
+      "mae": 1.3226070046278948,
+      "num_samples": 200,
+      "time_sec": 189.7,
+      "scene": "S2_straight",
+      "num_nodes": 98,
+      "persistence_mae": 1.6616853475570679
+    },
+    "persistence": {
+      "mae": 1.6616853475570679
+    }
+  },
+  "S3_intersection": {
+    "historical_avg": {
+      "model_type": "historical_avg",
+      "mae": 1.855934977531433,
+      "rmse": 2.5150039196014404,
+      "scene": "S3_intersection",
+      "num_nodes": 65,
+      "persistence_mae": 2.0736913681030273
+    },
+    "arima": {
+      "model_type": "arima",
+      "mae": 1.747781213540957,
+      "num_samples": 200,
+      "time_sec": 176.9,
+      "scene": "S3_intersection",
+      "num_nodes": 65,
+      "persistence_mae": 2.0736913681030273
+    },
+    "persistence": {
+      "mae": 2.0736913681030273
+    }
+  },
+  "S4_urban": {
+    "historical_avg": {
+      "model_type": "historical_avg",
+      "mae": 1.3187309503555298,
+      "rmse": 1.6561609506607056,
+      "scene": "S4_urban",
+      "num_nodes": 97,
+      "persistence_mae": 1.6291837692260742
+    },
+    "arima": {
+      "model_type": "arima",
+      "mae": 1.30937978670843,
+      "num_samples": 200,
+      "time_sec": 181.3,
+      "scene": "S4_urban",
+      "num_nodes": 97,
+      "persistence_mae": 1.6291837692260742
+    },
+    "persistence": {
+      "mae": 1.6291837692260742
+    }
+  }
+}
