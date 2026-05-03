@@ -1,49 +1,41 @@
-# When Does Spatial Granularity Matter?
+# When Does Spatial Granularity Matter? A Smoothing-Aware Diagnostic for GNN Traffic Forecasting [Experiment]
 
-**A Diagnostic Study of Spatial Granularity Effects in GNN-Based Traffic Prediction**
+**SIGSPATIAL 2026 — Research Track (Experiment Paper)**
 
-## Key Findings
+Yiming Guo, Sijin Liu
 
-- On METR-LA, **all GNNs fail to beat a trivial persistence baseline** (MAE=3.51). Best GNN: GraphWaveNet 3.67 (skill=-0.047)
-- Prediction error follows an empirical power law: MAE &prop; N^b, b&asymp;0.16 (METR-LA), b&asymp;0.28 (PeMS-Bay)
-- A **same-N smoothing control** reveals this scaling is primarily driven by temporal signal smoothing, not spatial information loss
-- GAT's learned attention degenerates to near-uniform (entropy=0.993), matching a fixed-uniform RandomGAT baseline
-- Lag-1 autocorrelation explains b divergence: METR-LA ACF=0.939, PeMS-Bay ACF=0.365
+## Overview
+
+This repository accompanies our SIGSPATIAL 2026 experiment paper on spatial granularity effects in GNN-based traffic prediction. We propose a **smoothing-aware diagnostic framework** that separates genuine spatial modeling gains from aggregation-induced temporal smoothing artifacts.
+
+**Core finding:** Prediction error follows a power law (MAE &prop; N^b), but same-N smoothing and sensor-subset controls reveal this scaling is substantially driven by temporal smoothing, not spatial information loss. On METR-LA (lag-1 ACF = 0.939), no GNN beats persistence; on PeMS-Bay, GNNs achieve positive skill (+0.26).
 
 ## Repository Structure
 
 ```
-paper.tex                        # Paper source (LaTeX, 8 pages + references)
-references.bib                   # BibTeX bibliography (22 entries)
-figures/                         # Publication figures (PDF)
-  fig1_power_law.pdf             #   Log-log power-law scaling
-  fig2_gat_entropy.pdf           #   GAT attention entropy distribution
-  fig3_marginal_returns.pdf      #   Marginal returns curve
-plot_figures.py                  # Script to regenerate all figures
-
-code/                            # Experiment code (GPU required)
-  config.py                      #   Paths, scenarios, hyperparameters
-  data_utils.py                  #   Data loading, node merging (Algorithm 1)
-  model.py                       #   All 5 GNN architectures + baselines
-  train.py                       #   Training loop with early stopping
-  run_v5_experiments.py          #   METR-LA: 11 granularities x 10 seeds
-  run_metr_multigran_v14.py      #   PeMS-Bay: multi-granularity experiments
-  run_smoothing_control.py       #   Same-N smoothing control (sigma in {0,1,2,3})
-  run_autocorr.py                #   Lag-1 autocorrelation computation
-  run_arima_baseline.py          #   Historical Average baseline
-
-results/                         # Sample result JSONs (full set: 505 files on server)
+paper_sigspatial.tex         # LaTeX source (ACM sigconf, 8 pages + references)
+paper_sigspatial.pdf         # Compiled PDF
+references.bib               # BibTeX bibliography
+acmart.cls                   # ACM article class (v1.93)
+ACM-Reference-Format.bst     # ACM bibliography style
+acmart-1.93/                 # Full acmart template directory
+figures/
+  fig_sensor_map.pdf         # Sensor location maps (METR-LA + PeMS-Bay)
+  fig3_results_overview.pdf  # 4-panel results overview (coarsening, smoothing, subset, ablation)
+  plot_sensor_map.py         # Script to regenerate sensor map
+  plot_fig3_results.py       # Script to regenerate results overview
+  metr_la_locations.csv      # METR-LA sensor coordinates
 ```
 
-## How to Compile Paper
+## How to Compile
 
-Requires a LaTeX installation with `aaai2026.sty` (included in the AAAI 2027 template).
+Requires a LaTeX installation with the ACM acmart class (included).
 
 ```bash
-pdflatex paper
-bibtex paper
-pdflatex paper
-pdflatex paper
+pdflatex paper_sigspatial
+bibtex paper_sigspatial
+pdflatex paper_sigspatial
+pdflatex paper_sigspatial
 ```
 
 ## Datasets
@@ -57,36 +49,41 @@ Data not included in repo due to size. Download from:
 - METR-LA: https://github.com/liyaguang/DCRNN
 - PeMS-Bay: https://pems.dot.ca.gov/
 
-## Reproducing Experiments
+## Diagnostic Framework
 
-Requires: Python 3.8+, PyTorch 1.12+, PyG (PyTorch Geometric), GPU.
+The paper proposes five diagnostics for evaluating spatial granularity effects:
 
-```bash
-# 1. Set up data paths in code/config.py
-
-# 2. Run METR-LA multi-granularity (3 models x 11 granularities x 10 seeds = 330 runs)
-python code/run_v5_experiments.py --model dcrnn --device cuda:0
-
-# 3. Run smoothing control (3 models x 4 sigma x 3 seeds = 36 runs)
-python code/run_smoothing_control.py --model dcrnn --sigma 2 --seed 42 --device cuda:0
-
-# 4. Compute lag-1 autocorrelation (CPU, ~30 seconds)
-python code/run_autocorr.py
-
-# 5. Run HA baseline (CPU, ~1 minute)
-python code/run_arima_baseline.py
-
-# 6. Generate figures
-python plot_figures.py
-```
+1. **Persistence Skill Test** — Check if any model beats last-value prediction
+2. **Coarsening Curve** — Fit MAE(N) = a &middot; N^b across granularity levels
+3. **Sensor-Subset Control** — Vary N without averaging (tests if b &asymp; 0)
+4. **Same-N Smoothing Control** — Apply explicit Gaussian smoothing at full resolution
+5. **Feature-vs-Graph Ablation** — Decompose coarsening into feature averaging vs graph compression
 
 ## Experiment Scale
 
 | Experiment | Runs | Models | Variables |
 |-----------|------|--------|-----------|
-| METR-LA granularity | 330 | 3 (DCRNN, GraphWaveNet, LSTGCNN) | 11 granularities x 10 seeds |
-| PeMS-Bay granularity | 120+ | 4 (DCRNN, STGCN, GraphWaveNet, LSTGCNN) | 11 granularities x 10 seeds |
-| Smoothing control | 36 | 3 | 4 sigma levels x 3 seeds |
+| METR-LA granularity | 330 | DCRNN, GraphWaveNet, LSTGCNN | 11 levels x 10 seeds |
+| PeMS-Bay granularity | 120+ | DCRNN, STGCN, GraphWaveNet, LSTGCNN | 11 levels x 10 seeds |
+| Smoothing control | 60 | DCRNN, STGCN, GraphWaveNet | 4 &sigma; x 3 seeds x 2 datasets |
+| Sensor subset | 72 | DCRNN, GraphWaveNet | 6 N-levels x 3 seeds x 2 datasets |
+| Feature-vs-graph ablation | 72 | DCRNN, GraphWaveNet | 4 conditions x 3 seeds x 2 datasets |
+| Distance-aware coarsening | 24 | DCRNN | 4 N-levels x 3 seeds x 2 datasets |
 | GAT diagnosis | 10+ | GAT, RandomGAT | 3-10 seeds |
 | Baselines | 4 | Persistence, HA | both datasets |
-| **Total** | **500+** | **5 architectures** | |
+| **Total** | **651+** | **5 architectures** | |
+
+## Citation
+
+```bibtex
+@inproceedings{guo2026granularity,
+  title={When Does Spatial Granularity Matter? A Smoothing-Aware Diagnostic for GNN Traffic Forecasting},
+  author={Guo, Yiming and Liu, Sijin},
+  booktitle={ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems},
+  year={2026}
+}
+```
+
+## License
+
+This repository contains the research paper and associated materials for academic use.
