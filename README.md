@@ -15,12 +15,56 @@ This project proposes a **smoothing-aware diagnostic framework** for evaluating 
 ## Repository Structure
 
 ```
+code/
+  config.py                      # Paths, scenarios, hyperparameters
+  data_utils.py                  # Data loading, node merging, subset, ablation
+  model.py                       # 5 GNN architectures + baselines
+  train.py                       # Training loop with early stopping
+  run_v5_experiments.py          # METR-LA multi-granularity experiments
+  run_metr_multigran_v14.py      # PeMS-Bay multi-granularity experiments
+  run_smoothing_control.py       # Same-N smoothing control (sigma sweep)
+  run_pems_smoothing_control.py  # PeMS-Bay smoothing control
+  run_sensor_subset.py           # Sensor-subset control
+  run_ablation_feature_graph.py  # Feature-vs-graph ablation
+  run_distance_coarsening.py     # Distance-aware coarsening
+  run_autocorr.py                # Lag-1 autocorrelation computation
+  run_arima_baseline.py          # Historical Average baseline
+  analyze_new_experiments.py     # Analysis script for subset/ablation results
+  add_metr_la.py                 # Download and prepare METR-LA data
+
 figures/
-  fig_sensor_map.pdf         # Sensor location maps (METR-LA + PeMS-Bay)
-  fig3_results_overview.pdf  # 4-panel results overview
-  plot_sensor_map.py         # Script to regenerate sensor map
-  plot_fig3_results.py       # Script to regenerate results overview
-  metr_la_locations.csv      # METR-LA sensor coordinates
+  fig_sensor_map.pdf             # Sensor location maps (METR-LA + PeMS-Bay)
+  fig3_results_overview.pdf      # 4-panel results overview
+  plot_sensor_map.py             # Script to regenerate sensor map
+  plot_fig3_results.py           # Script to regenerate results overview
+  metr_la_locations.csv          # METR-LA sensor coordinates
+```
+
+## Quick Start
+
+Requires: Python 3.8+, PyTorch 1.12+, PyG (PyTorch Geometric), GPU.
+
+```bash
+# 1. Set up data paths in code/config.py
+
+# 2. Run METR-LA multi-granularity (3 models x 11 granularities x 10 seeds)
+python code/run_v5_experiments.py --model dcrnn --device cuda:0
+
+# 3. Run smoothing control (sigma in {0,1,2,3})
+python code/run_smoothing_control.py --model dcrnn --sigma 2 --seed 42 --device cuda:0
+
+# 4. Run sensor-subset control
+python code/run_sensor_subset.py --model dcrnn --n_nodes 50 --seed 42 --device cuda:0
+
+# 5. Run feature-vs-graph ablation
+python code/run_ablation_feature_graph.py --model dcrnn --condition graph_only --n_nodes 100 --seed 42 --device cuda:0
+
+# 6. Run distance-aware coarsening
+python code/run_distance_coarsening.py --model dcrnn --n_nodes 50 --seed 42 --device cuda:0
+
+# 7. Generate figures
+python figures/plot_sensor_map.py
+python figures/plot_fig3_results.py
 ```
 
 ## Datasets
